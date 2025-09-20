@@ -1,0 +1,825 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": []
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "pmFV2M6aiTZn"
+      },
+      "outputs": [],
+      "source": [
+        "import numpy as np\n",
+        "import pandas as pd\n",
+        "import matplotlib.pyplot as plt\n",
+        "from sklearn.model_selection import train_test_split\n",
+        "from sklearn.preprocessing import StandardScaler\n"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "##PART -A"
+      ],
+      "metadata": {
+        "id": "FH43EEkHnlXe"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "STUDENT_ID = \"PES2UG24CS808\""
+      ],
+      "metadata": {
+        "id": "l92L0SzRqAJV"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# AUTOMATIC ASSIGNMENT BASED ON SRN - DO NOT MODIFY"
+      ],
+      "metadata": {
+        "id": "FKJwX-nErts-"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def get_student_assignment(student_id):\n",
+        "    \"\"\"\n",
+        "    Generate unique polynomial TYPE and architecture based on student ID\n",
+        "    Uses last 3 digits of student ID for assignment\n",
+        "    \"\"\"\n",
+        "\n",
+        "    last_three = int(student_id[-3:])\n",
+        "\n",
+        "    poly_type = last_three % 5\n",
+        "\n",
+        "    np.random.seed(last_three)\n",
+        "\n",
+        "    if poly_type == 0:\n",
+        "        degree = 2\n",
+        "        a = 0\n",
+        "        b = np.random.uniform(0.8, 1.5)\n",
+        "        c = np.random.uniform(3.0, 8.0)\n",
+        "        d = np.random.uniform(5.0, 15.0)\n",
+        "        poly_desc = f\"QUADRATIC: y = {b:.2f}x² + {c:.2f}x + {d:.2f}\"\n",
+        "\n",
+        "    elif poly_type == 1:\n",
+        "        degree = 3\n",
+        "        a = np.random.uniform(1.8, 2.5)\n",
+        "        b = np.random.uniform(-1.2, 0.2)\n",
+        "        c = np.random.uniform(3.0, 6.0)\n",
+        "        d = np.random.uniform(8.0, 12.0)\n",
+        "        poly_desc = f\"CUBIC: y = {a:.2f}x³ + {b:.2f}x² + {c:.2f}x + {d:.2f}\"\n",
+        "\n",
+        "    elif poly_type == 2:\n",
+        "        degree = 4\n",
+        "        a = np.random.uniform(0.008, 0.02)\n",
+        "        b = np.random.uniform(1.5, 2.2)\n",
+        "        c = np.random.uniform(-1.0, 0.5)\n",
+        "        d = np.random.uniform(2.0, 5.0)\n",
+        "        e = np.random.uniform(8.0, 12.0)\n",
+        "        poly_desc = f\"QUARTIC: y = {a:.4f}x⁴ + {b:.2f}x³ + {c:.2f}x² + {d:.2f}x + {e:.2f}\"\n",
+        "        coefficients = (a, b, c, d, e)\n",
+        "\n",
+        "    elif poly_type == 3:\n",
+        "        degree = \"sine\"\n",
+        "        a = np.random.uniform(1.5, 2.8)\n",
+        "        b = np.random.uniform(-0.8, 0.8)\n",
+        "        c = np.random.uniform(3.0, 6.0)\n",
+        "        d = np.random.uniform(8.0, 12.0)\n",
+        "        freq = np.random.uniform(0.02, 0.05)\n",
+        "        amp = np.random.uniform(5.0, 15.0)\n",
+        "        poly_desc = f\"CUBIC + SINE: y = {a:.2f}x³ + {b:.2f}x² + {c:.2f}x + {d:.2f} + {amp:.1f}*sin({freq:.3f}x)\"\n",
+        "        coefficients = (a, b, c, d, freq, amp)\n",
+        "\n",
+        "    else:\n",
+        "        degree = \"inverse\"\n",
+        "        a = np.random.uniform(1.8, 2.5)\n",
+        "        b = np.random.uniform(-1.0, 0.5)\n",
+        "        c = np.random.uniform(3.0, 6.0)\n",
+        "        d = np.random.uniform(8.0, 12.0)\n",
+        "        inv_coeff = np.random.uniform(50, 200)\n",
+        "        poly_desc = f\"CUBIC + INVERSE: y = {a:.2f}x³ + {b:.2f}x² + {c:.2f}x + {d:.2f} + {inv_coeff:.1f}/x\"\n",
+        "        coefficients = (a, b, c, d, inv_coeff)\n",
+        "\n",
+        "\n",
+        "    if poly_type in [0, 1]:\n",
+        "        coefficients = (a, b, c, d)\n",
+        "\n",
+        "\n",
+        "    noise_std = np.random.uniform(1.5, 2.5)\n",
+        "\n",
+        "\n",
+        "    arch_type = last_three % 4\n",
+        "    architectures = {\n",
+        "        0: {\"hidden1\": 64, \"hidden2\": 64, \"lr\": 0.001, \"batch_desc\": \"Balanced Architecture\"},\n",
+        "        1: {\"hidden1\": 32, \"hidden2\": 72, \"lr\": 0.005, \"batch_desc\": \"Narrow-to-Wide Architecture\"},\n",
+        "        2: {\"hidden1\": 72, \"hidden2\": 32, \"lr\": 0.001, \"batch_desc\": \"Wide-to-Narrow Architecture\"},\n",
+        "        3: {\"hidden1\": 96, \"hidden2\": 96, \"lr\": 0.003, \"batch_desc\": \"Large Balanced Architecture\"}\n",
+        "    }\n",
+        "\n",
+        "    return {\n",
+        "        \"polynomial_type\": poly_type,\n",
+        "        \"degree\": degree,\n",
+        "        \"coefficients\": coefficients,\n",
+        "        \"polynomial_desc\": poly_desc,\n",
+        "        \"noise_std\": noise_std,\n",
+        "        \"architecture\": architectures[arch_type],\n",
+        "        \"student_seed\": last_three\n",
+        "    }\n",
+        "\n",
+        "# Get your assignment\n",
+        "assignment = get_student_assignment(STUDENT_ID)\n",
+        "poly_type = assignment[\"polynomial_type\"]\n",
+        "degree = assignment[\"degree\"]\n",
+        "coefficients = assignment[\"coefficients\"]\n",
+        "noise_std = assignment[\"noise_std\"]\n",
+        "hidden1 = assignment[\"architecture\"][\"hidden1\"]\n",
+        "hidden2 = assignment[\"architecture\"][\"hidden2\"]\n",
+        "learning_rate = assignment[\"architecture\"][\"lr\"]\n",
+        "\n",
+        "print(\"=\"*70)\n",
+        "print(f\"ASSIGNMENT FOR STUDENT ID: {STUDENT_ID}\")\n",
+        "print(\"=\"*70)\n",
+        "print(f\"Polynomial Type: {assignment['polynomial_desc']}\")\n",
+        "print(f\"Noise Level: ε ~ N(0, {noise_std:.2f})\")\n",
+        "print(f\"Architecture: Input(1) → Hidden({hidden1}) → Hidden({hidden2}) → Output(1)\")\n",
+        "print(f\"Learning Rate: {learning_rate}\")\n",
+        "print(f\"Architecture Type: {assignment['architecture']['batch_desc']}\")\n",
+        "print(\"=\"*70)\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "enIibAVbrouX",
+        "outputId": "8805ae15-6598-47bc-d690-25c45c0e991a"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "============================================================\n",
+            "ASSIGNMENT FOR STUDENT ID: PES2UG24CS808\n",
+            "============================================================\n",
+            "Polynomial Type: CUBIC + INVERSE: y = 1.94x³ + 0.38x² + 4.90x + 10.98 + 175.7/x\n",
+            "Noise Level: ε ~ N(0, 1.76)\n",
+            "Architecture: Input(1) → Hidden(72) → Hidden(32) → Output(1)\n",
+            "Learning Rate: 0.001\n",
+            "Architecture Type: Wide-to-Narrow Architecture\n",
+            "============================================================\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# DATASET GENERATION - DO NOT MODIFY"
+      ],
+      "metadata": {
+        "id": "lDuLSwIGsKKW"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "np.random.seed(assignment[\"student_seed\"])\n",
+        "\n",
+        "n_samples = 100000\n",
+        "x = np.random.uniform(-100, 100, n_samples)\n",
+        "\n",
+        "\n",
+        "if poly_type == 0:\n",
+        "    _, b, c, d = coefficients\n",
+        "    y = b * x**2 + c * x + d + np.random.normal(0, noise_std, n_samples)\n",
+        "\n",
+        "elif poly_type == 1:\n",
+        "    a, b, c, d = coefficients\n",
+        "    y = a * x**3 + b * x**2 + c * x + d + np.random.normal(0, noise_std, n_samples)\n",
+        "\n",
+        "elif poly_type == 2:\n",
+        "    a, b, c, d, e = coefficients\n",
+        "    y = a * x**4 + b * x**3 + c * x**2 + d * x + e + np.random.normal(0, noise_std, n_samples)\n",
+        "\n",
+        "elif poly_type == 3:\n",
+        "    a, b, c, d, freq, amp = coefficients\n",
+        "    y = a * x**3 + b * x**2 + c * x + d + amp * np.sin(freq * x) + np.random.normal(0, noise_std, n_samples)\n",
+        "\n",
+        "else:\n",
+        "    a, b, c, d, inv_coeff = coefficients\n",
+        "\n",
+        "    # Added a small epsilon to avoid division by zero near x=0\n",
+        "    y = a * x**3 + b * x**2 + c * x + d + inv_coeff / (x + np.sign(x) * 0.1) + np.random.normal(0, noise_std, n_samples)\n",
+        "\n",
+        "\n",
+        "df = pd.DataFrame({'x': x, 'y': y})\n",
+        "df.to_csv('student_polynomial_dataset.csv', index=False)\n",
+        "print(f\"Dataset with {n_samples:,} samples generated and saved!\")\n",
+        "\n",
+        "X = df['x'].values.reshape(-1, 1)\n",
+        "Y = df['y'].values.reshape(-1, 1)\n",
+        "\n",
+        "X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=42)\n",
+        "\n",
+        "scaler_X = StandardScaler()\n",
+        "scaler_Y = StandardScaler()\n",
+        "\n",
+        "X_train_scaled = scaler_X.fit_transform(X_train)\n",
+        "X_test_scaled = scaler_X.transform(X_test)\n",
+        "Y_train_scaled = scaler_Y.fit_transform(Y_train)\n",
+        "Y_test_scaled = scaler_Y.transform(Y_test)\n",
+        "\n",
+        "print(f\"Training samples: {len(X_train_scaled):,}\")\n",
+        "print(f\"Test samples: {len(X_test_scaled):,}\")"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "zKJO4YsGr9gr",
+        "outputId": "aa23e493-09e2-44bc-f41d-e80f9fc46c5f"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Dataset with 100,000 samples generated and saved!\n",
+            "Training samples: 80,000\n",
+            "Test samples: 20,000\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# ACTIVATION FUNCTIONS- TODO: IMPLEMENT"
+      ],
+      "metadata": {
+        "id": "DsszlTbRsit-"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def relu(z):\n",
+        "  #Todo implement the Relu formula\n",
+        "  return np.maximum(0, z)\n",
+        "\n",
+        "def relu_derivative(z):\n",
+        "  #Todo implement the Relu derivative formula\n",
+        "  return (z > 0) * 1"
+      ],
+      "metadata": {
+        "id": "3EbkfViPsdew"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# LOSS FUNCTION- TODO: IMPLEMENT"
+      ],
+      "metadata": {
+        "id": "wMv1RPJesvpj"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def mse_loss(y_true, y_pred):\n",
+        "  #Todo implement the MSE formula\n",
+        "  return np.mean((y_true - y_pred) ** 2)"
+      ],
+      "metadata": {
+        "id": "-BnFOQcFsuBl"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# WEIGHT INITIALIZATION - TODO: IMPLEMENT XAVIER INITIALIZATION\n",
+        "## **Xavier (Glorot) Initialization**\n",
+        "\n",
+        "When training neural networks, how we initialize weights matters.  \n",
+        "- If weights are **too small** → activations and gradients vanish.  \n",
+        "- If weights are **too large** → activations and gradients explode.  \n",
+        "\n",
+        "#**Xavier initialization** (Glorot & Bengio, 2010) balances this by keeping the variance of activations roughly the same across all layers.\n",
+        "\n",
+        "---\n",
+        "\n",
+        "### Formula\n",
+        "\n",
+        "Let:  \n",
+        "- **fan_in** = number of input units to a layer  \n",
+        "- **fan_out** = number of output units from a layer  \n",
+        "\n",
+        "The variance of weights is:\n",
+        "\n",
+        "![image.png](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAX8AAAB1CAYAAACmqOG1AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAACIqSURBVHhe7d17VFTl/gfwL4IJwmYEcgADxURgMNAEjH6i5g1EEiXj2DEstbNQM2+Juqw0NY8eQy0vlCRqeclbmmOKqYWeEs0CIpAEU5T7RbkMMgwxA+/vj8Psxd4zckmRiXk+a7GW7ufdA8ywnr33e3leE8YYAyGEEKPSRXyAEEJI50fJnxBCjBAlf0IIMUKU/AkhxAhR8ieEECNEyZ8QQowQJX9CCDFClPwJIcQIUfInhBAjRMmfEEKMECV/QggxQpT8CSHECFHyJ4QQI0TJnxBCjBAlf0IIMUKU/AkhxAhR8ieEECNEyZ8QQowQJX9CCDFClPwJIcQIUfInhBAjRMmfEEKMECV/QggxQpT8CSHECFHyJ4QQG2TCGGPig4SQzkmpVCInJwdlZWXw8PCAra0tTE1Nxc2IEaA7f0KMQEVFBWbOnAlHR0f4+/sgJCQE/fr1Q69evbBly5aoVCrxKaSTo+RPSCeXl5eHcePGoaamBqmpqaioqMC1a9cwffp0qFQqrFixAq+++iqqqqrEp5JOzHTVqlWrxAcJIZ2DRqPBihUrUF9fjz179sDBwQFdunSBRCLBuHHjoFAokJSUhOzsbJiZmWHYsGEwMTERvwzphOjOn5BOLD8/H2fPnsXFixexZs0aqNVqPmZiYoI5c+bA3t4eALB//37k5uY2OZt0ZpT8CenEKisr+e6c3bt3IykpSRCXSqWQyWQAgMLCQty4cUMQJ50XJX9COjEbGxvY2NgAACwtLSGRSARx7t27w9HRkf+/RqMRxEnnRcmfkE6sT58+OHjwIBYsWICTJ0/C09NTEK+pqUFRURHQ2A1kbm4uiJPOi+b5E2LE7ty5g7Fjx6KkpARubm6Ij4+HVCoVNyOdEN35E2LEvv76a5SUlAAA5syZQ4nfiFDyJ8RIZWdn49NPPwUATJ8+Ha+99pq4CenEKPkTYoSqqqqwcOFCFBcXY8qUKfjPf/6Drl27ipuRToySPyFGRq1W47333sPFixcxc+ZMbN26Fd27dxc3I50cJX9CjAhjDDExMfjiiy+wZs0abNq0CRYWFuJmxAjQbB9CjIhcLkdkZCQ2b96MqVOn8qUcNBoNrly5wh77I50f3fkTYiTOnj2L+fPn45NPPhEkfgAoLy/H8uXLUVxcLDiHdF6U/AkxAsnJyViwYAG2bduGyZMn6xRvu3XrFu7fvw9bW1vBcdJ5UbdPC9RqNbZs2QJLS0vMmTNHHO4Qe/fuRXZ2NpYtW0b9tqCjo6OQkJCAlJQUaDQaNGrUKGA31NTUhISEBFRUVKBfv34wNTUFTU1NCA0NhYmJCcydOxcjR44Ea0p8Lkp+zVCo1Wrtn8fFxWHy5Mm4e/cuoqOjyQ8XEhKC9evXIzExEQoFBTz8k5OTkZaWhlevXj1wD58sWLDAnP4o+RNhFxaLxXj++efx/vvv48KFC7h58yYEBASAWq3G/v37cfr0aYSFhWHMmDF45pln8v04PT0dQUFBCAsLg6WlJWq1GgkJCSgtLYVGo4GPjw969eoFPT09eHr64suvvyYQ3oEqlQr+/v7o1q0bRo4cCS8vL/zP1Go1Fi1ahL6+Pvj7+6tT89/fH926dcOECRNw/fp1eHt7w87ODi4uLhgwYAD+2hYVFcHBwQFhYWGYOHEiysvLMXXqVCxevBizZs1CWVkZrl+/jksuucSPXnZ2NkJDQ+Hdu3d4eHjgxIkTqKioQKPRIDExEX744QdISkpyqN+5c+cOFixYgNmzZ+OMGTNw/fp1+Pn5ISoqCrt27QKtVquzFxcUFODs7Oyxm5kEQoK7kX9vbGzE/v37sXDhQkxMTBDrj379+kFTk+fPnw8AuHPnDu7du4fnnnsO0dHRCAoK8i8zIyMDr7zyCjZv3oxPP/0UI0aMQG5uLgCQlpaG6enp+L4kIiIC58+fR1RUFPr06QO9evVCeno6cnNzkZGRgdLS0oD6fUajESNGjMDixYtx8+ZNuLm5oUePHti3b18gMaF6L168iJSUFPj6+mLYsGE4ePAgJk+ejDfffBNhYWFwd3cHABw+fBjx8fGYMmUKduzYgQkTJmDcuHG4f/8+3NzcEB8fj82bN4OaT6VSCdu3b8eyZcv4xU/p6enw8PDA1q1bERgYiIiICERGRmLOnDm4dOkSRo4ciZMnT6KsrCx4l3RqlPwJkIULFyYtLS2TyWS8+OKLHXquVqthamoqbtmyhW3YsIHt3LlT3Lh27dqxnp4eJpPJ+N20srKSGjVqlG1YfHy8OXPmjGn2bY1Gg5ubm2fPnDljr7/+yvLz81lJSQn7+OOPWVBQENu0aZNZtWqV3n+ttrY2VlRURGNjY2ZsbGywYcMGtnDhQmbp6ent8y+9vLxc72fcuHFMKhWzlStX8v3dHRoaYpRKJUvPz+f7k+Lh4dmECRNod3e32X8oD4+PZ9u2bTNnZ2c2btyY5eXl8a+Pjo5mcnNzma+vL2dmZmZJSUmMHTu20bE9tW/fPnZwcGBmZ2dt0KBBjBkzZqO/3a9fP0ZERIQnN3vV1dWsra2N+fl5sV27dmtU5BNCSozszp8/jwEDBmDlypWIjIwkzBjj4uKChYUF3N3dIbo69fLly4iNjUVFRQVWrlzJ39eHDx+Gk5MTtm7dioEDB2LOnDn43eUvv/wCkUjEc0tLSUlBZWUlBg4ciPj4eAgLC8PChQv51Z49e7B8+XL89NNPjBgxAl999RWmTJmCoKAgxMXFYcSIEdiyZQsmTpyIefPm4fDhwxgyZAhWr14t/jY5OTlYtGgRUlJSYGVlBQAcO3YMP/zww6M265qUlATGGJydnfHiiy+iVCrRvHnzcHFxgaOjIzZs2ID4+HgAhg0bhnXr1uHAgQO4cuUK5s6dK/g8nO3t7dixYwe8vLzQrVs3/vaoqKiAjo4O7t+/j08++QS9evXCO++8g4YNG+KHH37A6NGjW8vNBEKO1G7J3zQ/P//b9nFxcfDOO+/A2dkZixYt4reNjo7Ggw8+iLi4ONy+fRsDBw6EnJwcXFxcsGHDBnyzB8AYw3vvvYfTp0/jiy++wMMPP4xnn30WWq0WFy9exMyZM9GjRw+UlJTg/fffR0xMDDZt2oStW7fip59+QlRUFHJzc2FkZIQBAwbAxcWlU/9r6urqUFhYiAEDBmDBggUIBANCQkLwxhtvICoqCtbW1oDGmfr32NhYVFdX98j4+PjA3d0diYmJuHPnDri5uSEyMhI7duzAc889h9GjR8PQ0BAJCQm4fv06jh8/jpycHNjY2ODPP/+Eo6Mjdu/ejZ07d+LChQvw8PDA3NzclF0zI0L+O2dpaWnctB8KhQLbtm3DmTNnYNKkSYjFYjwe/6WlpeHWrVsAgDfeeAMREdGGlH/S3t4eXbp0wZ49e7Bv3z54eXnhyJEjWLBgATNmzMCZM2f4/vfv34+bN2+isrIShoaGmDBhAgDAyclJsBq+fPlyJCQk4MKFC+jcuXOoWbMmEhISUFhYCHd3d9ja2mKjRo34+uuvoVKpcOzYMfj7+0MkEsHFixdx9epVHD9+HBs3bgQAWFhYIBAIKCkpQWxsLPz9/QGNN0aYm5vj/Pnz+Pjjj/Hy5Ut4eXnh5s2bsLGxQb169XDo0CHs3bsXixYtwtSpU4GGd/r8+fMAgKFDh4a0JkKI49Tuid/KysoQExMDkUgEGhsbcXFxQUhICLq7u7C1tcXq1avx/vvvY82aNQCAkpISxMfHIy0tDY4ODjAwMABra2ssWbIE48aNQ1RUFJycnHD//n2dPq/n+V1dXbFq1SoEBgaipKQE/v7+qKysRJ8+fTBo0CD+7r744gsAgKKiInw9zcvLC6GhoWjbti3efvttVFVVwdHRkeDEz5EjR4gIi+u6e/fuxMTEYN68eWjcuDHWrl2LAQMGID4+HnJycoCG1Nrx48eRl5eHhoYG/m/btm3o1asXqqqqoFKpkJiYiB49euDgwYMgkUigVqtRp04ddO/eHQcPniz4n4uIiGDfvn24desW8vLy8Nlnn2Hv3r2oqqqKq1evwsXFBf369YOxYsUCP/6+e/cuPj4+WLFiBWJjY+Hh4YHAwECwBqSgoACBgoICXLlyBQCQlpYGX19fdOrUCd26dYOzs7PGzYlW16tXDxYWFrh37x7+/v747rvv8Pz5c5w/fx6pqan46quvYtGiRVi8eLF+Vn5+PvLz81FbW4uSkpLC2dmZ34d8/PzQuXNnHD9+HDqdDq+99hp++uknpKWl4e+//8bPnj0jPj7eLgN+gRCjNlO6J3/T5s2bkJubizFjxmDatGn4/vvv+OabbzBv3jwAwNSpU3HkyBEsXboU6enp2LJlC3R0dHBwcEB4eDg+//zzw/g2e/fu4fz58wgLC8PNmzdxyy23YNGiRfjnn3+wf/9+BAcHIy0tDQcPHsSQIUMwaNAg/vzzT3F421y9ehXbt29HcnIyhEIh5ubm+O2333DlyhUYGBjgzz//xNixY/Gby7lz54KWbWwqlQq+vr7YtWkK/fTTT+jUqROeffbZqKqqgsbGRrz//vsAgISEBOzZs0eQ3sHBwdixYwdOnjwJb29v/P777zB06FAcOnQIQUFBCAsLw1tvvYVvv/0WZ86cwYgRI5qcvJqfA+7cuYOBAwfg6enJr+Z3xsbGcHBwQEhICH799Vd88sknEIlEuHjxIvbv3w+pVCq2bNly378DQQj9sDsid+bOnYuJEycCAK6urggJCcFzzz2HuLg4fvvtt+C1lJSUYNWqVVixYgXWrl2LP//8E5MmTcIzzzxz9O0+7f/j4uIwZswYxMXFQalUYvv27fjkk08QEhKCrKwsREREwM3NDW+88Qbu37+Pq6srjh07hh49esDUqVOxYsUKHDlyBO3bt0deXh6ef/551NTU4M8//8S7776LHTt2ICgoCP369YM3Nzd+jE2dOnWAhoYGAIBkMhkvvPACoqOjMXToUH7UaI0bNwbGGADg/PnzsHjxYujUqRO+//57/P7778jIyIBGo0FkZCQOHz6MiooKHDt2DDt37sS9e/fw8OHDhk/LhH6eO+FjY2NmZ2fHZs+ezZqbm9nKlSv5V46NjWXGjh1rUj1z+/btbMPGjWzZsmX8v/80NDS0T6ygoIDt3r2bnTp1ihkZGdnWrVv5jYSEBNbX10cqlaqzz9tXpVKx8PBw9uzZM9u2bVuqX929ezdjGI5t3rzZ7zVfX1/Wrl1bZ1h7e3umVCrZ5s2b2YIFC1h2djbze/r+j7V27dqyBQsW8K+1Wq2WZWRksIiICDZz5kzWvHlzflPWrFnjw4YNY6GhoXf42kI+f/48W7t2LUNDQ/y89M1Gg8LCwoCm80XGGMbGxjBk/w7hUqkkEomYm5ub32g0Gvr27Rs2MjLCNm7cyEwqlbKJEyeytra2Tq3Fzs6OTZs2jVVVVbGpqSmf+E2Q/F+vL+3k6+vL3d3dOqWHgYGBd9yG+T9yREREnB+cgoICBAQEAADo1KkTpNN6G+g5YozBzs4Oqqqq+OGHHyAzMxOHDh3Chg0bcPz4cXqNlZaWQqFQIBAIMHnyZLx9+xYlJSVwdXXFBx98gJiYGJSUlOD+/fsAgI+PD/b29ujQoQPe3t64cOECvvvuOwwMDNC5c+d+1tX3zTffYN++fVi5ciUWLlwY3Lh3794hKCgII0aMQLt27fDT3d3d+Pjjj+Hl5QUbGxuMHj0aGRkZqKioQB/9JbXk7u7O70/9h+fPn8fTp08BABcvXoTBYMAf/7Vr1+Kzzz5FWVnZpvrgCwsL+G2711W3bt3iwYMH+Ouvv1BeXg5vby/u3LkDFxcXHDp0CCwsLHC5XAAAEhMTMXv2bKSnp2PmzJmIiIiAp6envn+Ojg5oaGjw81mR+X+FElpaWnD//n0AQCwWY/v27YiKikJMTIzaW4S0u3btCp6enhg5ciRCQ0MxaNAgVFRUQCaTAY1t3Lt3L7755hsAgJMnT2Lk94b/vPz8/HDz5k1wcXFBv379YNq0aTh06BCsra1hZmYGvL290bVrV+zevfvJ25gQwj8h3d7+D7du3Yq0tDRsbGzw9/dHSkoK+vXrh+joadjY2ODPP/+Eo6MjZs6ciaysLOzevRtfX1/s2LED33zzDWbMmAEfHx+MHDkSzz33HDZv3oykpCR8+umnmDBhAoYOHYqSkpL8tS9dutQk+8fFxQGP8BsbG7z++usICwvDnDlzMH36dNx///1YvHgxFixYgKioKExNTfHixQt4eHjgxIkT2L9/P4YOHQphYWGYNGkSPB6P+O2Ljo5GUlISli5dCgC4ceOGwY4o1vjixQssWbIEX3zxBQAwcuRIODo64vz58/jkk0+Ql5eHnJwc/v7+qKqqwsSJE3HhwoU26zI3NwcrKytMmTIE3d3d+OSVV/w9Q0tLCxwcHHD37l29c1s8PDxwd3fH9evXERsbCy8vL9jY2KDXd9Q6y+Xy7L17N4qKipg6dSpu3bqFrVu34owZM3Dz5k1ER0fj+vXrWLJkCaZMmcK3sVlYWMDS0hIffPABSkpKMGTIEHh7e+O3337DnJwcwsPDMXbsWP7bJ2gN/4cQgv8z1O6B4Ovrq0/bKxQKPn/9X9u6dWuLxj5jDLNmzYKDg4MDBQUF+f03MzMTWVlZ8cYbb7B79+6tGgXW1tZMmzYNGzdujGPHjuHLL7/EmjVrsHTpUjQ1NeGLL77AW2+9hWvXriEgIAAZGRnQarUGTf7l5eWgsQ4QCoX48ssvMXjwYFjtU+rq6tCjR49GzU4jEAhQXl6OHTt2YGdn16hJ7Pz8fDx69AgA4OzsjFtvvRUA8Nprr+GDDz7A3bt3ERERgVOnTmHixImIjIzE3r17YWdnBwkJCdi/f3/D9/8tLS3Fx8cHW1tbNDU1wdvbW+s3bm5u6NGjB/r164eJEydCSkoKbty4gZ07d2Lbtm1oamrCyZMngYbdnJycjIyMDNTV1WHs2LEICwtDYmIiJk+ejDlz5uDUqVM4d+4cSkpKsGLFCiQlJWH+/PlITk7GmjVrsHLlSgQGBsLHxwfPP/883n77bbx//x4bGxvExsbi008/xbp16wK3tMlkMgwaNAgvv/wyevfuHTt37kRsbCz+8Y9/IDExEbt370ZgYCB69OiB9evXw9XVVXs/X15eGDt2LGJiYpCXlweNJoqf8vLy4OjoqE71uLm5wcDAgG+KqakpeHt74+HDh3jyyScd2iL5n+E7y8jICD6fH2iMhISk/v/w/w8NDTU56ePGjWPJycls7NixLJVK2YkTJ7LBgwdZQUEBs7CwYGZlZcXOnTvHqlWrFh8fH7Z48WLm6OjIysrKmIaGBrZ582YmFwvq7NmzLF++fIIt2549e5hAIGA1NTUMDAxkixYtYmFhYcycORPjOMa8vLxYUlIS8/PzY1lZWeIwK7m/b0zY29uzxYsXs+3bt9vmzZtZTU0N4ziOXb58mcXFxTGxWMwOHjzI/vznP2dOTk7s/v37LCIigvfff59xHMfMZjMeHBzsM+N2+/ZtYjEbhg4dykpKSpgfHx/Lz8/n115ZWcm+++67Rt0vLy9nFy9eZFFRUVZWVubGjRvpzHl4eMDrGv/Wbdu2rX1l8Qgh/5c3NzcMHTqUefPmwcrKCgAwd+5chIWF4cKFC9i4cSOeffZZfPzxx2jcuDEWLFiA8+fPAwC6detW52M5ZDIZFi9ejOrqagDAzJkzsWnTJjz44IMYOHAgysrKYGFhgaCgIIwdOxbfffedOHjwoO7HhIeHIy0tDQCYmJigcePGqKmpgbu7O1588UXcuXMHAGD48OGYNGkSvv/+e/H7jYmJwdChQ/Hw4UMAwNSpU3X6hDczM1OQf2QymXB3d4eTkxMmTpyIvLw8PPzww2jQoAHuvvtu5OXl4bvvvsPEiRPRrVs3/vOf/2Ds2LG4efMmbty4AY11iB07duDdu3eIj4/H77//jhkzZuDKlSvo168flixZguPHj+PcuXOICwsDAHh5eWHbtm0AgOXLl/P72dnZ+Pjjj+Hu7o7Fixdj+vTpuHnzJmbMmIFr165h4cKF+Oijj7Bv3z48//zzuHnzJjIyMvDb+9y6dUusVmv0T4mB9u3bQ/y01dXVuHPnDhwcHKCiooJ/iJ+QkIBFixYhIiICBgYGeO+992BhYYFvvvkG/fr1AwAeeughODs7C+r6kUjEvLw8VFRUYN26dZg4cSJOnDiBefPmoU+fPvz8z5o1C+fPnx902pQJ/38hRggx/g9wD2oH+A/nAAAAAElFTkSuQmCC)\n",
+        "\n",
+        "\n",
+        "##Two common forms:  \n",
+        "\n",
+        "#**Normal distribution:** \n",
+        "![image.png](data:image/png;base64,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)\n",
+        "\n",
+        "#**Uniform distribution:** \n",
+        "![image.png](data:image/png;base64,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)\n",
+        "\n",
+        "Biases are initialized to **0**.\n",
+        "\n",
+        "---\n",
+        "\n",
+        "### In This Assignment\n",
+        "- **W1 (input → hidden1):** `fan_in = input_dim`, `fan_out = hidden1`  \n",
+        "- **W2 (hidden1 → hidden2):** `fan_in = hidden1`, `fan_out = hidden2`  \n",
+        "- **W3 (hidden2 → output):** `fan_in = hidden2`, `fan_out = output_dim`  \n",
+        "\n",
+        "Your task: compute the correct `xavier_std` for each layer, sample weights from a normal distribution with that std, and set biases = 0.\n",
+        "\n"
+      ],
+      "metadata": {
+        "id": "1j9JKYEAvc1B"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def xavier_initialization(input_dim, hidden1, hidden2, output_dim):\n",
+        "    \"\"\"\n",
+        "    TODO: IMPLEMENT XAVIER WEIGHT INITIALIZATION\n",
+        "\n",
+        "    Xavier initialization: weights ~ N(0, sqrt(2/(fan_in + fan_out)))\n",
+        "    Biases should be initialized to zeros\n",
+        "\n",
+        "    Args:\n",
+        "        input_dim: Size of input layer (1)\n",
+        "        hidden1: Size of first hidden layer\n",
+        "        hidden2: Size of second hidden layer\n",
+        "        output_dim: Size of output layer (1)\n",
+        "\n",
+        "    Returns:\n",
+        "        W1, b1, W2, b2, W3, b3: Initialized weights and biases\n",
+        "    \"\"\"\n",
+        "    np.random.seed(assignment[\"student_seed\"])\n",
+        "\n",
+        "    # TODO: Calculate Xavier standard deviation for each layer\n",
+        "    # Hint: xavier_std = sqrt(2 / (fan_in + fan_out))\n",
+        "    std_W1 = np.sqrt(2 / (input_dim + hidden1))\n",
+        "    std_W2 = np.sqrt(2 / (hidden1 + hidden2))\n",
+        "    std_W3 = np.sqrt(2 / (hidden2 + output_dim))\n",
+        "\n",
+        "    # TODO: Initialize W1 (input to first hidden layer)\n",
+        "    W1 = np.random.randn(input_dim, hidden1) * std_W1\n",
+        "    b1 = np.zeros((1, hidden1))\n",
+        "\n",
+        "    # TODO: Initialize W2 (first hidden to second hidden layer)\n",
+        "    W2 = np.random.randn(hidden1, hidden2) * std_W2\n",
+        "    b2 = np.zeros((1, hidden2))\n",
+        "\n",
+        "    # TODO: Initialize W3 (second hidden to output layer)\n",
+        "    W3 = np.random.randn(hidden2, output_dim) * std_W3\n",
+        "    b3 = np.zeros((1, output_dim))\n",
+        "\n",
+        "    return W1, b1, W2, b2, W3, b3"
+      ],
+      "metadata": {
+        "id": "wIS1mAiWs80Z"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# FORWARD PROPAGATION - TODO: IMPLEMENT"
+      ],
+      "metadata": {
+        "id": "iewSaGkDs9ar"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def forward_pass(X, W1, b1, W2, b2, W3, b3):\n",
+        "    \"\"\"\n",
+        "    TODO: IMPLEMENT FORWARD PROPAGATION\n",
+        "\n",
+        "    Perform forward pass through the network:\n",
+        "    Input → Hidden1(ReLU) → Hidden2(ReLU) → Output(Linear)\n",
+        "\n",
+        "    Args:\n",
+        "        X: Input data (batch_size, 1)\n",
+        "        W1, b1: First layer weights and biases\n",
+        "        W2, b2: Second layer weights and biases\n",
+        "        W3, b3: Output layer weights and biases\n",
+        "\n",
+        "    Returns:\n",
+        "        z1, a1, z2, a2, z3: Pre-activations and activations for each layer\n",
+        "\n",
+        "    Hint:\n",
+        "        z = X @ W + b  (linear transformation)\n",
+        "        a = activation_function(z)\n",
+        "    \"\"\"\n",
+        "\n",
+        "    # TODO: First hidden layer\n",
+        "    z1 = np.dot(X, W1) + b1\n",
+        "    a1 = relu(z1)  # Apply ReLU activation\n",
+        "\n",
+        "    # TODO: Second hidden layer\n",
+        "    z2 = np.dot(a1, W2) + b2\n",
+        "    a2 = relu(z2)  # Apply ReLU activation\n",
+        "\n",
+        "    # TODO: Output layer\n",
+        "    z3 = np.dot(a2, W3) + b3\n",
+        "\n",
+        "    return z1, a1, z2, a2, z3"
+      ],
+      "metadata": {
+        "id": "PJtjFRAQsmht"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# BACKWARD PROPAGATION - TODO:IMPLEMENT"
+      ],
+      "metadata": {
+        "id": "kWDBH_NtvyxY"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def backward_pass(X, Y_true, z1, a1, z2, a2, Y_pred, W2, W3):\n",
+        "    \"\"\"\n",
+        "    TODO: IMPLEMENT BACKPROPAGATION\n",
+        "\n",
+        "    Compute gradients using chain rule:\n",
+        "    ∂Loss/∂W = ∂Loss/∂Y_pred * ∂Y_pred/∂z * ∂z/∂W\n",
+        "\n",
+        "    Args:\n",
+        "        X: Input data\n",
+        "        Y_true: True target values\n",
+        "        z1, a1, z2, a2: Forward pass intermediate values\n",
+        "        Y_pred: Network predictions (z3)\n",
+        "        W2, W3: Weights (needed for gradient computation)\n",
+        "\n",
+        "    Returns:\n",
+        "        dW1, db1, dW2, db2, dW3, db3: Gradients for all parameters\n",
+        "    \"\"\"\n",
+        "\n",
+        "    m = len(X)  # Batch size\n",
+        "\n",
+        "    # TODO: Output layer gradients\n",
+        "    # Start with derivative of MSE\n",
+        "    dY_pred = (Y_pred - Y_true) * (2/m)\n",
+        "\n",
+        "    # TODO: Third layer (Output) gradients\n",
+        "    dW3 = np.dot(a2.T, dY_pred)\n",
+        "    db3 = np.sum(dY_pred, axis=0, keepdims=True)\n",
+        "\n",
+        "    # TODO: Second hidden layer gradients\n",
+        "    da2 = np.dot(dY_pred, W3.T)\n",
+        "    dz2 = da2 * relu_derivative(z2)\n",
+        "    dW2 = np.dot(a1.T, dz2)\n",
+        "    db2 = np.sum(dz2, axis=0, keepdims=True)\n",
+        "\n",
+        "    # TODO: First hidden layer gradients\n",
+        "    da1 = np.dot(dz2, W2.T)\n",
+        "    dz1 = da1 * relu_derivative(z1)\n",
+        "    dW1 = np.dot(X.T, dz1)\n",
+        "    db1 = np.sum(dz1, axis=0, keepdims=True)\n",
+        "\n",
+        "    return dW1, db1, dW2, db2, dW3, db3"
+      ],
+      "metadata": {
+        "id": "ThOwNs9Tv1Ra"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# TRAINING FUNCTION - TODO:  COMPLETE IMPLEMENTATION"
+      ],
+      "metadata": {
+        "id": "yQuIpTSTv9Fd"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def train_neural_network(X_train, Y_train, X_test, Y_test, epochs=200, patience=10):\n",
+        "    \"\"\"\n",
+        "    TODO: COMPLETE THE TRAINING LOOP\n",
+        "\n",
+        "    Implement training with early stopping and track losses\n",
+        "\n",
+        "    Args:\n",
+        "        X_train, Y_train: Training data\n",
+        "        X_test, Y_test: Test data for validation\n",
+        "        epochs: Maximum number of training epochs\n",
+        "        patience: Early stopping patience\n",
+        "\n",
+        "    Returns:\n",
+        "        best_weights: Best model weights\n",
+        "        train_losses: Training loss history\n",
+        "        test_losses: Test loss history\n",
+        "    \"\"\"\n",
+        "\n",
+        "\n",
+        "    W1, b1, W2, b2, W3, b3 = xavier_initialization(1, hidden1, hidden2, 1)\n",
+        "\n",
+        "    best_test_loss = float('inf')\n",
+        "    best_weights = None\n",
+        "    patience_counter = 0\n",
+        "\n",
+        "    train_losses = []\n",
+        "    test_losses = []\n",
+        "\n",
+        "    print(\"Starting training...\")\n",
+        "    print(f\"Architecture: 1 → {hidden1} → {hidden2} → 1\")\n",
+        "    print(f\"Learning Rate: {learning_rate}\")\n",
+        "    print(f\"Max Epochs: {epochs}, Early Stopping Patience: {patience}\")\n",
+        "    print(\"-\" * 50)\n",
+        "\n",
+        "    for epoch in range(epochs):\n",
+        "\n",
+        "\n",
+        "        z1, a1, z2, a2, Y_pred_train = forward_pass(X_train, W1, b1, W2, b2, W3, b3)\n",
+        "\n",
+        "\n",
+        "        train_loss = mse_loss(Y_train, Y_pred_train)\n",
+        "\n",
+        "\n",
+        "        dW1, db1, dW2, db2, dW3, db3 = backward_pass(X_train, Y_train, z1, a1, z2, a2, Y_pred_train, W2, W3)\n",
+        "\n",
+        "\n",
+        "        # TODO: Implement weight updates here\n",
+        "        W1 -= learning_rate * dW1\n",
+        "        b1 -= learning_rate * db1\n",
+        "        W2 -= learning_rate * dW2\n",
+        "        b2 -= learning_rate * db2\n",
+        "        W3 -= learning_rate * dW3\n",
+        "        b3 -= learning_rate * db3\n",
+        "\n",
+        "\n",
+        "        _, _, _, _, Y_pred_test = forward_pass(X_test, W1, b1, W2, b2, W3, b3)\n",
+        "        test_loss = mse_loss(Y_test, Y_pred_test)\n",
+        "\n",
+        "\n",
+        "        train_losses.append(train_loss)\n",
+        "        test_losses.append(test_loss)\n",
+        "\n",
+        "        if (epoch + 1) % 20 == 0:\n",
+        "            print(f\"Epoch {epoch+1:3d}: Train Loss = {train_loss:.6f}, Test Loss = {test_loss:.6f}\")\n",
+        "\n",
+        "        if test_loss < best_test_loss:\n",
+        "            best_test_loss = test_loss\n",
+        "            best_weights = (W1.copy(), b1.copy(), W2.copy(), b2.copy(), W3.copy(), b3.copy())\n",
+        "            patience_counter = 0\n",
+        "        else:\n",
+        "            patience_counter += 1\n",
+        "\n",
+        "        if patience_counter >= patience:\n",
+        "            print(f\"Early stopping triggered at epoch {epoch+1}\")\n",
+        "            print(f\"Best test loss: {best_test_loss:.6f}\")\n",
+        "            break\n",
+        "\n",
+        "    return best_weights, train_losses, test_losses"
+      ],
+      "metadata": {
+        "id": "6xAgRedsv9xV"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# EXECUTE TRAINING"
+      ],
+      "metadata": {
+        "id": "bgqh5y66wIJX"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "print(\"Training Neural Network with your specific configuration...\")\n",
+        "weights, train_losses, test_losses = train_neural_network(\n",
+        "    X_train_scaled, Y_train_scaled, X_test_scaled, Y_test_scaled,\n",
+        "    epochs=500, patience=10\n",
+        ")"
+      ],
+      "metadata": {
+        "id": "goNgQ0P1wFGw"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# RESULTS VISUALIZATION"
+      ],
+      "metadata": {
+        "id": "_TRnuROpwMFg"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Plot training progress\n",
+        "plt.figure(figsize=(15, 5))\n",
+        "\n",
+        "# Loss curves\n",
+        "plt.subplot(1, 3, 1)\n",
+        "plt.plot(train_losses, label='Training Loss', color='blue', alpha=0.7)\n",
+        "plt.plot(test_losses, label='Test Loss', color='red', alpha=0.7)\n",
+        "plt.xlabel('Epoch')\n",
+        "plt.ylabel('MSE Loss')\n",
+        "plt.title('Training & Test Loss Over Time')\n",
+        "plt.legend()\n",
+        "plt.grid(True, alpha=0.3)\n",
+        "\n",
+        "# Get final predictions for visualization\n",
+        "if weights is not None:\n",
+        "    W1, b1, W2, b2, W3, b3 = weights\n",
+        "    _, _, _, _, Y_pred_scaled = forward_pass(X_test_scaled, W1, b1, W2, b2, W3, b3)\n",
+        "\n",
+        "    # Inverse transform to original scale\n",
+        "    Y_test_orig = scaler_Y.inverse_transform(Y_test_scaled)\n",
+        "    Y_pred_orig = scaler_Y.inverse_transform(Y_pred_scaled)\n",
+        "    X_test_orig = scaler_X.inverse_transform(X_test_scaled)\n",
+        "\n",
+        "    # Predictions vs Actual\n",
+        "    plt.subplot(1, 3, 2)\n",
+        "    # Sort data for a clean plot of the curve\n",
+        "    sorted_indices = np.argsort(X_test_orig.flatten())\n",
+        "    plt.scatter(X_test_orig[sorted_indices], Y_test_orig[sorted_indices], s=1, alpha=0.3, label='Actual', color='blue')\n",
+        "    plt.plot(X_test_orig[sorted_indices], Y_pred_orig[sorted_indices], color='red', label='Predicted')\n",
+        "    plt.xlabel('x')\n",
+        "    plt.ylabel('y')\n",
+        "    plt.title('Neural Network Predictions vs Actual')\n",
+        "    plt.legend()\n",
+        "    plt.grid(True, alpha=0.3)\n",
+        "\n",
+        "    # Residual plot\n",
+        "    plt.subplot(1, 3, 3)\n",
+        "    residuals = Y_test_orig.flatten() - Y_pred_orig.flatten()\n",
+        "    plt.scatter(X_test_orig, residuals, s=1, alpha=0.3, color='green')\n",
+        "    plt.axhline(y=0, color='black', linestyle='--', alpha=0.5)\n",
+        "    plt.xlabel('x')\n",
+        "    plt.ylabel('Residuals (Actual - Predicted)')\n",
+        "    plt.title('Residual Analysis')\n",
+        "    plt.grid(True, alpha=0.3)\n",
+        "else:\n",
+        "    print(\"Training did not converge, no best weights to plot.\")\n",
+        "\n",
+        "plt.tight_layout()\n",
+        "plt.show()"
+      ],
+      "metadata": {
+        "id": "DAJc933xwNtM"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "SPECIFIC PREDICTION TEST"
+      ],
+      "metadata": {
+        "id": "VRQPcgQuwSzx"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "if weights is not None:\n",
+        "    W1, b1, W2, b2, W3, b3 = weights\n",
+        "    x_test_value = 90.2\n",
+        "    x_new = np.array([[x_test_value]])\n",
+        "    x_new_scaled = scaler_X.transform(x_new)\n",
+        "\n",
+        "    _, _, _, _, y_pred_scaled = forward_pass(x_new_scaled, W1, b1, W2, b2, W3, b3)\n",
+        "    y_pred = scaler_Y.inverse_transform(y_pred_scaled)\n",
+        "\n",
+        "    if poly_type == 0:\n",
+        "        _, b, c, d = coefficients\n",
+        "        y_true = b * x_test_value**2 + c * x_test_value + d\n",
+        "\n",
+        "    elif poly_type == 1:\n",
+        "        a, b, c, d = coefficients\n",
+        "        y_true = a * x_test_value**3 + b * x_test_value**2 + c * x_test_value + d\n",
+        "\n",
+        "    elif poly_type == 2:\n",
+        "        a, b, c, d, e = coefficients\n",
+        "        y_true = a * x_test_value**4 + b * x_test_value**3 + c * x_test_value**2 + d * x_test_value + e\n",
+        "\n",
+        "    elif poly_type == 3:\n",
+        "        a, b, c, d, freq, amp = coefficients\n",
+        "        y_true = a * x_test_value**3 + b * x_test_value**2 + c * x_test_value + d + amp * np.sin(freq * x_test_value)\n",
+        "\n",
+        "    else:\n",
+        "        a, b, c, d, inv_coeff = coefficients\n",
+        "        y_true = a * x_test_value**3 + b * x_test_value**2 + c * x_test_value + d + inv_coeff / (x_test_value + np.sign(x_test_value) * 0.1)\n",
+        "\n",
+        "    print(\"\\n\" + \"=\"*60)\n",
+        "    print(\"PREDICTION RESULTS FOR x = 90.2\")\n",
+        "    print(\"=\"*60)\n",
+        "    print(f\"Neural Network Prediction: {y_pred[0][0]:,.2f}\")\n",
+        "    print(f\"Ground Truth (formula):    {y_true:,.2f}\")\n",
+        "    print(f\"Absolute Error:            {abs(y_pred[0][0] - y_true):,.2f}\")\n",
+        "    print(f\"Relative Error:            {abs(y_pred[0][0] - y_true)/abs(y_true)*100:.3f}%\")\n",
+        "\n",
+        "else:\n",
+        "    print(\"\\n\" + \"=\"*60)\n",
+        "    print(\"PREDICTION TEST SKIPPED\")\n",
+        "    print(\"=\"*60)\n",
+        "    print(\"Training did not converge, cannot perform prediction.\")\n"
+      ],
+      "metadata": {
+        "id": "S8lE9UOwwUv3"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# PERFORMANCE METRICS"
+      ],
+      "metadata": {
+        "id": "PFW_llRzwX0U"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Calculate final performance metrics\n",
+        "final_train_loss = train_losses[-1] if train_losses else float('inf')\n",
+        "final_test_loss = test_losses[-1] if test_losses else float('inf')\n",
+        "\n",
+        "if weights is not None:\n",
+        "    # Calculate R² score\n",
+        "    y_test_mean = np.mean(Y_test_orig)\n",
+        "    ss_res = np.sum((Y_test_orig - Y_pred_orig) ** 2)\n",
+        "    ss_tot = np.sum((Y_test_orig - y_test_mean) ** 2)\n",
+        "    r2_score = 1 - (ss_res / ss_tot)\n",
+        "\n",
+        "    print(\"\\n\" + \"=\"*60)\n",
+        "    print(\"FINAL PERFORMANCE SUMMARY\")\n",
+        "    print(\"=\"*60)\n",
+        "    print(f\"Final Training Loss: {final_train_loss:.6f}\")\n",
+        "    print(f\"Final Test Loss:     {final_test_loss:.6f}\")\n",
+        "    print(f\"R² Score:           {r2_score:.4f}\")\n",
+        "    print(f\"Total Epochs Run:   {len(train_losses)}\")\n",
+        "else:\n",
+        "    print(\"\\n\" + \"=\"*60)\n",
+        "    print(\"FINAL PERFORMANCE SUMMARY SKIPPED\")\n",
+        "    print(\"=\"*60)\n",
+        "    print(\"Training did not converge, cannot calculate metrics.\")"
+      ],
+      "metadata": {
+        "id": "Y0e2jCixwaCv"
+      },
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
